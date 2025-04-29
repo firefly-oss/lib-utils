@@ -3,6 +3,7 @@ package com.catalis.core.utils.template;
 import freemarker.template.TemplateException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -12,7 +13,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.BiFunction;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,6 +37,19 @@ public class TemplateRenderUtilTest {
         // Write a simple FreeMarker template for testing
         String templateContent = "<p>Hello ${name}!</p>";
         Files.write(dir.resolve("test.ftl"), templateContent.getBytes(StandardCharsets.UTF_8));
+
+        // Write a template that uses shared variables
+        String sharedVarTemplate = "<p>Hello ${name}!</p><p>Company: ${companyName}</p>";
+        Files.write(dir.resolve("shared-var-test.ftl"), sharedVarTemplate.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @AfterAll
+    static void cleanup() {
+        // Clean up any shared variables or processors that might affect other tests
+        TemplateRenderUtil.clearSharedVariables();
+        TemplateRenderUtil.setTemplatePreProcessor(null);
+        TemplateRenderUtil.setTemplatePostProcessor(null);
+        TemplateRenderUtil.shutdownAsyncThreadPool();
     }
 
     @Test
@@ -183,5 +202,194 @@ public class TemplateRenderUtilTest {
                 () -> TemplateRenderUtil.renderHtmlToPdf("   ", os, new TemplateRenderUtil.PdfOptions())
         );
         assertTrue(ex.getMessage().contains("HTML content is empty"));
+    }
+
+    @Test
+    void testTemplateCaching() throws IOException, TemplateException {
+        // Enable template caching
+        TemplateRenderUtil.setTemplateCachingEnabled(true);
+        TemplateRenderUtil.setTemplateCacheMaxSize(10);
+
+        // Render the template twice
+        String html1 = TemplateRenderUtil.renderTemplateToHtml("test.ftl", Map.of("name", "Cache Test 1"));
+        String html2 = TemplateRenderUtil.renderTemplateToHtml("test.ftl", Map.of("name", "Cache Test 2"));
+
+        // Verify both renders worked
+        assertNotNull(html1);
+        assertNotNull(html2);
+        assertTrue(html1.contains("Cache Test 1"));
+        assertTrue(html2.contains("Cache Test 2"));
+
+        // Clean up
+        TemplateRenderUtil.clearTemplateCache();
+    }
+
+    @Test
+    void testTemplateValidation() {
+        // Valid template
+        String validTemplate = "<p>Hello ${name}!</p>";
+        List<String> validErrors = TemplateRenderUtil.validateTemplate(validTemplate);
+        assertTrue(validErrors.isEmpty(), "Valid template should have no errors");
+
+        // Invalid template (missing closing brace)
+        String invalidTemplate = "<p>Hello ${name!</p>";
+        List<String> invalidErrors = TemplateRenderUtil.validateTemplate(invalidTemplate);
+        assertFalse(invalidErrors.isEmpty(), "Invalid template should have errors");
+    }
+
+    @Test
+    void testTemplateFileValidation() {
+        // Valid template file
+        List<String> validErrors = TemplateRenderUtil.validateTemplateFile("test.ftl");
+        assertTrue(validErrors.isEmpty(), "Valid template file should have no errors");
+
+        // Invalid template file (non-existent)
+        List<String> invalidErrors = TemplateRenderUtil.validateTemplateFile("non-existent.ftl");
+        assertFalse(invalidErrors.isEmpty(), "Non-existent template file should have errors");
+    }
+
+    @Test
+    void testRenderHtmlToImage() throws Exception {
+        // Create a simple HTML content
+        String html = "<html><body><h1 style='color:blue'>Image Test</h1></body></html>";
+
+        // Render to image
+        byte[] imageBytes = TemplateRenderUtil.renderHtmlToImage(html, 400, 200, "png");
+
+        // Verify image was created
+        assertNotNull(imageBytes);
+        assertTrue(imageBytes.length > 0, "Image should not be empty");
+
+        // Verify it's a PNG image by checking the header
+        byte[] pngHeader = {(byte)0x89, 'P', 'N', 'G'};
+        byte[] actualHeader = new byte[4];
+        System.arraycopy(imageBytes, 0, actualHeader, 0, 4);
+        assertArrayEquals(pngHeader, actualHeader, "Image should be a PNG");
+    }
+
+    @Test
+    void testRenderTemplateToImage() throws Exception {
+        // Render template to image
+        byte[] imageBytes = TemplateRenderUtil.renderTemplateToImage(
+                "test.ftl", 
+                Map.of("name", "Image Test"), 
+                400, 200, "png");
+
+        // Verify image was created
+        assertNotNull(imageBytes);
+        assertTrue(imageBytes.length > 0, "Image should not be empty");
+    }
+
+    @Test
+    void testSharedVariables() throws Exception {
+        // Add a shared variable
+        TemplateRenderUtil.addSharedVariable("companyName", "Acme Corporation");
+
+        // Render a template that uses the shared variable
+        String html = TemplateRenderUtil.renderTemplateToHtml("shared-var-test.ftl", Map.of("name", "User"));
+
+        // Verify the shared variable was used
+        assertNotNull(html);
+        assertTrue(html.contains("Hello User!"), "Rendered HTML should contain the name");
+        assertTrue(html.contains("Company: Acme Corporation"), "Rendered HTML should contain the company name");
+
+        // Clean up
+        TemplateRenderUtil.clearSharedVariables();
+    }
+
+    @Test
+    void testTemplateProcessingHooks() throws Exception {
+        // Set up a preprocessor that adds a header
+        BiFunction<String, Map<String, Object>, String> preprocessor = (content, model) -> 
+            "<h1>Preprocessed</h1>" + content;
+
+        // Set up a postprocessor that adds a footer
+        BiFunction<String, Map<String, Object>, String> postprocessor = (content, model) -> 
+            content + "<footer>Postprocessed</footer>";
+
+        // Set the processors
+        TemplateRenderUtil.setTemplatePreProcessor(preprocessor);
+        TemplateRenderUtil.setTemplatePostProcessor(postprocessor);
+
+        // Render a template string
+        String templateContent = "<p>Hello ${name}!</p>";
+        String html = TemplateRenderUtil.renderTemplateStringToHtml(templateContent, "hook-test", Map.of("name", "Hooks"));
+
+        // Verify the hooks were applied
+        assertNotNull(html);
+        assertTrue(html.contains("<h1>Preprocessed</h1>"), "Rendered HTML should contain preprocessor output");
+        assertTrue(html.contains("Hello Hooks!"), "Rendered HTML should contain the template content");
+        assertTrue(html.contains("<footer>Postprocessed</footer>"), "Rendered HTML should contain postprocessor output");
+
+        // Clean up
+        TemplateRenderUtil.setTemplatePreProcessor(null);
+        TemplateRenderUtil.setTemplatePostProcessor(null);
+    }
+
+    @Test
+    void testAsyncRendering() throws Exception {
+        // Render a template asynchronously
+        CompletableFuture<String> future = TemplateRenderUtil.renderTemplateToHtmlAsync("test.ftl", Map.of("name", "Async"));
+
+        // Wait for the result
+        String html = future.get();
+
+        // Verify the result
+        assertNotNull(html);
+        assertTrue(html.contains("Hello Async!"), "Rendered HTML should contain the correct greeting");
+    }
+
+    @Test
+    void testAsyncPdfRendering() throws Exception {
+        // Render a template to PDF asynchronously
+        CompletableFuture<byte[]> future = TemplateRenderUtil.renderTemplateToPdfBytesAsync(
+                "test.ftl", 
+                Map.of("name", "Async PDF"), 
+                new TemplateRenderUtil.PdfOptions());
+
+        // Wait for the result
+        byte[] pdfBytes = future.get();
+
+        // Verify the PDF was created
+        assertNotNull(pdfBytes);
+        assertTrue(pdfBytes.length > 0, "PDF output should not be empty");
+        String header = new String(pdfBytes, 0, 4, StandardCharsets.US_ASCII);
+        assertEquals("%PDF", header, "PDF header should start with '%PDF'");
+    }
+
+    @Test
+    void testPdfBookmarksOptions() {
+        // Create PDF options with bookmarks
+        TemplateRenderUtil.PdfOptions options = new TemplateRenderUtil.PdfOptions()
+                .withBookmark("Chapter 1", "1")
+                .withChildBookmark("Section 1.1", "1")
+                .withChildBookmark("Section 1.2", "1")
+                .withBookmark("Chapter 2", "1");
+
+        // Verify the bookmarks were added to the options
+        assertTrue(options.hasBookmarks(), "Options should have bookmarks");
+
+        List<TemplateRenderUtil.PdfOptions.Bookmark> bookmarks = options.getBookmarks();
+        assertEquals(2, bookmarks.size(), "Should have 2 top-level bookmarks");
+
+        // Check first bookmark and its children
+        TemplateRenderUtil.PdfOptions.Bookmark chapter1 = bookmarks.get(0);
+        assertEquals("Chapter 1", chapter1.getTitle(), "First bookmark should be Chapter 1");
+        assertEquals(1, chapter1.getLevel(), "First bookmark should be level 1");
+        assertEquals("1", chapter1.getDestination(), "First bookmark should point to page 1");
+
+        List<TemplateRenderUtil.PdfOptions.Bookmark> children = chapter1.getChildren();
+        assertEquals(2, children.size(), "Chapter 1 should have 2 children");
+        assertEquals("Section 1.1", children.get(0).getTitle(), "First child should be Section 1.1");
+        assertEquals("Section 1.2", children.get(1).getTitle(), "Second child should be Section 1.2");
+
+        // Check second bookmark
+        TemplateRenderUtil.PdfOptions.Bookmark chapter2 = bookmarks.get(1);
+        assertEquals("Chapter 2", chapter2.getTitle(), "Second bookmark should be Chapter 2");
+        assertEquals(0, chapter2.getChildren().size(), "Chapter 2 should have no children");
+
+        // Test clearing bookmarks
+        options.clearBookmarks();
+        assertFalse(options.hasBookmarks(), "Options should have no bookmarks after clearing");
     }
 }

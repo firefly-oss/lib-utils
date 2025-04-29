@@ -6,15 +6,21 @@ A collection of utility classes for common operations in Java applications.
 
 ### Template Rendering (FreeMarker)
 
-The `TemplateRenderUtils` class provides utilities for rendering FreeMarker templates to HTML and PDF documents with extensive customization options.
+The `TemplateRenderUtil` class provides utilities for rendering FreeMarker templates to HTML, PDF, and image formats with extensive customization options.
 
 ## Table of Contents
 
 - [Installation](#installation)
+- [Quick Start Guide](#quick-start-guide)
 - [Template Configuration](#template-configuration)
 - [Rendering Templates to HTML](#rendering-templates-to-html)
 - [Converting HTML to PDF](#converting-html-to-pdf)
 - [PDF Customization Options](#pdf-customization-options)
+- [Template Caching](#template-caching)
+- [Template Validation](#template-validation)
+- [HTML to Image Conversion](#html-to-image-conversion)
+- [Template Processing Hooks](#template-processing-hooks)
+- [Asynchronous Rendering](#asynchronous-rendering)
 - [Security Features](#security-features)
 - [Advanced Usage](#advanced-usage)
 - [Error Handling](#error-handling)
@@ -55,7 +61,7 @@ Configure FreeMarker to load templates from a specific directory:
 
 ```java
 // Set a file system directory for templates
-TemplateRenderUtils.setTemplateDirectory("/path/to/templates");
+TemplateRenderUtil.setTemplateDirectory("/path/to/templates");
 ```
 
 ### Using Multiple Template Sources
@@ -65,7 +71,7 @@ Configure FreeMarker to load templates from multiple sources:
 ```java
 // Load templates from both classpath and file system
 // Templates will be searched first in classpath, then in file system
-TemplateRenderUtils.setClasspathAndFileTemplateLoaders("templates", "/path/to/external/templates");
+TemplateRenderUtil.setClasspathAndFileTemplateLoaders("templates", "/path/to/external/templates");
 ```
 
 ### Adding Shared Variables
@@ -74,9 +80,9 @@ Make variables available to all templates:
 
 ```java
 // Add company information available in all templates
-TemplateRenderUtils.addSharedVariable("companyName", "Acme Corporation");
-TemplateRenderUtils.addSharedVariable("companyLogo", "/images/logo.png");
-TemplateRenderUtils.addSharedVariable("currentYear", java.time.Year.now().getValue());
+TemplateRenderUtil.addSharedVariable("companyName", "Acme Corporation");
+TemplateRenderUtil.addSharedVariable("companyLogo", "/images/logo.png");
+TemplateRenderUtil.addSharedVariable("currentYear", java.time.Year.now().getValue());
 ```
 
 ### Setting Configuration Properties
@@ -90,7 +96,7 @@ props.setProperty("number_format", "0.##");
 props.setProperty("date_format", "yyyy-MM-dd");
 props.setProperty("locale", "en_US");
 
-TemplateRenderUtils.setConfigurationProperties(props);
+TemplateRenderUtil.setConfigurationProperties(props);
 ```
 
 ## Rendering Templates to HTML
@@ -202,7 +208,13 @@ TemplateRenderUtil.PdfOptions options = new TemplateRenderUtil.PdfOptions()
     .withFontDirectory("/path/to/fonts")
 
     // Set default font
-    .withDefaultFont("Arial");
+    .withDefaultFont("Arial")
+
+    // Add PDF bookmarks (outline entries)
+    .withBookmark("Chapter 1", "1")
+    .withChildBookmark("Section 1.1", "1")
+    .withChildBookmark("Section 1.2", "1")
+    .withBookmark("Chapter 2", "2");
 
 // Use the options when converting to PDF
 TemplateRenderUtil.renderTemplateToPdfFile("invoice.ftl", dataModel, "custom-output.pdf", options);
@@ -215,6 +227,133 @@ TemplateRenderUtil.renderTemplateStringToPdfFile(
     "custom-string-output.pdf",
     options
 );
+```
+
+## Template Caching
+
+Improve performance by caching templates:
+
+```java
+// Enable template caching
+TemplateRenderUtil.setTemplateCachingEnabled(true);
+
+// Set maximum cache size (number of templates)
+TemplateRenderUtil.setTemplateCacheMaxSize(100);
+
+// Clear the template cache when needed
+TemplateRenderUtil.clearTemplateCache();
+```
+
+## Template Validation
+
+Validate templates before using them:
+
+```java
+// Validate a template string
+String templateContent = "<p>Hello ${name}!</p>";
+List<String> errors = TemplateRenderUtil.validateTemplate(templateContent);
+if (errors.isEmpty()) {
+    System.out.println("Template is valid!");
+} else {
+    System.out.println("Template has errors: " + errors);
+}
+
+// Validate a template file
+List<String> fileErrors = TemplateRenderUtil.validateTemplateFile("invoice.ftl");
+if (fileErrors.isEmpty()) {
+    System.out.println("Template file is valid!");
+} else {
+    System.out.println("Template file has errors: " + fileErrors);
+}
+```
+
+## HTML to Image Conversion
+
+Convert HTML content or templates to images:
+
+```java
+// Convert HTML string to image
+String html = "<html><body><h1 style='color:blue'>Hello World</h1></body></html>";
+byte[] pngBytes = TemplateRenderUtil.renderHtmlToImage(html, 800, 600, "png");
+
+// Save the image to a file
+TemplateRenderUtil.saveImageToFile(pngBytes, "output.png");
+
+// Render a template directly to an image
+byte[] templateImageBytes = TemplateRenderUtil.renderTemplateToImage(
+    "certificate.ftl",
+    dataModel,
+    1024, 768,
+    "jpg"
+);
+
+// Render a template string to an image
+String templateContent = "<html><body><h1>${title}</h1><p>${content}</p></body></html>";
+byte[] templateStringImageBytes = TemplateRenderUtil.renderTemplateStringToImage(
+    templateContent,
+    "inline-template",
+    dataModel,
+    800, 600,
+    "png"
+);
+```
+
+## Template Processing Hooks
+
+Add pre-processing and post-processing hooks to modify templates and rendered HTML:
+
+```java
+// Add a pre-processor to modify template content before rendering
+TemplateRenderUtil.setTemplatePreProcessor((content, model) -> {
+    // Add a header to all templates
+    return "<div class='header'>Company Header</div>\n" + content;
+});
+
+// Add a post-processor to modify rendered HTML
+TemplateRenderUtil.setTemplatePostProcessor((html, model) -> {
+    // Add analytics code to all rendered pages
+    return html + "\n<script>trackPageView();</script>";
+});
+
+// Clear processors when no longer needed
+TemplateRenderUtil.setTemplatePreProcessor(null);
+TemplateRenderUtil.setTemplatePostProcessor(null);
+```
+
+## Asynchronous Rendering
+
+Render templates asynchronously for improved performance:
+
+```java
+// Render template to HTML asynchronously
+CompletableFuture<String> htmlFuture = TemplateRenderUtil.renderTemplateToHtmlAsync(
+    "report.ftl", 
+    dataModel
+);
+
+// Process the result when it's ready
+htmlFuture.thenAccept(html -> {
+    System.out.println("HTML rendering completed, length: " + html.length());
+});
+
+// Render template to PDF asynchronously
+CompletableFuture<byte[]> pdfFuture = TemplateRenderUtil.renderTemplateToPdfBytesAsync(
+    "invoice.ftl",
+    invoiceData,
+    new TemplateRenderUtil.PdfOptions()
+);
+
+// Process the PDF when it's ready
+pdfFuture.thenAccept(pdfBytes -> {
+    System.out.println("PDF rendering completed, size: " + pdfBytes.length + " bytes");
+    // Save the PDF or send it to the client
+});
+
+// Configure the thread pool size for async operations
+TemplateRenderUtil.setAsyncThreadPoolSize(10);
+
+// Shutdown the thread pool when no longer needed (e.g., on application shutdown)
+TemplateRenderUtil.shutdownAsyncThreadPool();
 ```
 
 ## Security Features
@@ -235,7 +374,7 @@ PdfRenderOptions options = new PdfRenderOptions()
     .setAllowCopy(false);     // Allow/disallow copying content
 
 // Use the options when converting to PDF
-TemplateRenderUtils.renderTemplateToPdf("confidential-report.ftl", dataModel, "protected-report.pdf", options);
+TemplateRenderUtil.renderTemplateToPdf("confidential-report.ftl", dataModel, "protected-report.pdf", options);
 ```
 
 ## Advanced Usage
@@ -254,15 +393,15 @@ String templateContent = "<!DOCTYPE html>\n" +
                         "</html>";
 
 // Save the template for future use
-TemplateRenderUtils.saveTemplate(templateContent, "dynamic-template.ftl");
+TemplateRenderUtil.saveTemplate(templateContent, "dynamic-template.ftl");
 ```
 
 ### Combining Multiple Features
 
 ```java
 // Set up template configuration
-TemplateRenderUtils.setClasspathAndFileTemplateLoaders("templates", "./custom-templates");
-TemplateRenderUtils.addSharedVariable("company", companyInfo);
+TemplateRenderUtil.setClasspathAndFileTemplateLoaders("templates", "./custom-templates");
+TemplateRenderUtil.addSharedVariable("company", companyInfo);
 
 // Create custom PDF options
 PdfRenderOptions options = new PdfRenderOptions(PdfRenderOptions.PageSize.A4)
@@ -272,7 +411,7 @@ PdfRenderOptions options = new PdfRenderOptions(PdfRenderOptions.PageSize.A4)
     .setAllowCopy(false);
 
 // Render template directly to PDF with all options
-TemplateRenderUtils.renderTemplateToPdf("reports/quarterly.ftl", reportData, "Q2-2023-Report.pdf", options);
+TemplateRenderUtil.renderTemplateToPdf("reports/quarterly.ftl", reportData, "Q2-2023-Report.pdf", options);
 ```
 
 ## Error Handling
@@ -282,8 +421,8 @@ The utility provides detailed error handling:
 ```java
 try {
     // Attempt to render a template
-    String html = TemplateRenderUtils.renderTemplateToHtml("invoice.ftl", dataModel);
-    TemplateRenderUtils.convertHtmlToPdf(html, "invoice.pdf");
+    String html = TemplateRenderUtil.renderTemplateToHtml("invoice.ftl", dataModel);
+    TemplateRenderUtil.renderTemplateToPdfFile("invoice.ftl", dataModel, "invoice.pdf");
 } catch (IOException e) {
     // Handle file access errors
     logger.error("Could not access template or output file", e);
