@@ -80,7 +80,7 @@ public class TemplateRenderUtil {
 
     /**
      * Creates the default FreeMarker configuration.
-     * 
+     *
      * @return A configured FreeMarker Configuration instance
      */
     private static Configuration createFreemarkerConfig() {
@@ -444,7 +444,7 @@ public class TemplateRenderUtil {
 
     /**
      * Gets a template from the cache or loads it if not cached.
-     * 
+     *
      * @param templateName the name of the template to load
      * @return the loaded template
      * @throws IOException if the template cannot be loaded
@@ -466,7 +466,7 @@ public class TemplateRenderUtil {
                 logger.debug("Added template to cache: {}", templateName);
             } else {
                 // Cache is full, log a warning
-                logger.warn("Template cache is full (size: {}). Consider increasing the cache size.", 
+                logger.warn("Template cache is full (size: {}). Consider increasing the cache size.",
                         templateCacheMaxSize);
             }
         } else {
@@ -620,7 +620,7 @@ public class TemplateRenderUtil {
 
     /**
      * Adds bookmarks to a PDF document.
-     * 
+     *
      * @param stamper the PdfStamper to modify
      * @param bookmarks the list of bookmarks to add
      */
@@ -641,7 +641,7 @@ public class TemplateRenderUtil {
 
     /**
      * Recursively adds a bookmark and its children to a PDF document.
-     * 
+     *
      * @param parent the parent PdfOutline
      * @param bookmark the bookmark to add
      * @param stamper the PdfStamper to modify
@@ -1050,7 +1050,7 @@ public class TemplateRenderUtil {
 
         /**
          * Adds a text watermark to the PDF.
-         * 
+         *
          * @param text the watermark text
          * @param opacity the opacity of the watermark (0.0-1.0)
          * @param fontSize the font size of the watermark
@@ -1069,7 +1069,7 @@ public class TemplateRenderUtil {
 
         /**
          * Adds a simple text watermark to the PDF with default settings.
-         * 
+         *
          * @param text the watermark text
          * @return this PdfOptions instance for method chaining
          */
@@ -1079,7 +1079,7 @@ public class TemplateRenderUtil {
 
         /**
          * Enables PDF encryption with the specified passwords and permissions.
-         * 
+         *
          * @param userPassword the user password (can be null for no user password)
          * @param ownerPassword the owner password
          * @param allowPrinting whether to allow printing
@@ -1087,7 +1087,7 @@ public class TemplateRenderUtil {
          * @param allowModify whether to allow document modification
          * @return this PdfOptions instance for method chaining
          */
-        public PdfOptions withEncryption(String userPassword, String ownerPassword, 
+        public PdfOptions withEncryption(String userPassword, String ownerPassword,
                                         boolean allowPrinting, boolean allowCopy, boolean allowModify) {
             this.encrypted = true;
             this.userPassword = userPassword;
@@ -1100,7 +1100,7 @@ public class TemplateRenderUtil {
 
         /**
          * Enables PDF encryption with owner password only and default permissions.
-         * 
+         *
          * @param ownerPassword the owner password
          * @return this PdfOptions instance for method chaining
          */
@@ -1110,7 +1110,7 @@ public class TemplateRenderUtil {
 
         /**
          * Sets PDF document metadata.
-         * 
+         *
          * @param title the document title
          * @param author the document author
          * @param subject the document subject
@@ -1127,7 +1127,7 @@ public class TemplateRenderUtil {
 
         /**
          * Adds a bookmark (outline entry) to the PDF.
-         * 
+         *
          * @param title the title of the bookmark
          * @param destination the destination anchor or page number
          * @return this PdfOptions instance for method chaining
@@ -1139,7 +1139,7 @@ public class TemplateRenderUtil {
 
         /**
          * Adds a bookmark (outline entry) to the PDF with a specific level.
-         * 
+         *
          * @param title the title of the bookmark
          * @param level the level of the bookmark (1 for top level)
          * @param destination the destination anchor or page number
@@ -1152,7 +1152,7 @@ public class TemplateRenderUtil {
 
         /**
          * Adds a child bookmark to the last added bookmark.
-         * 
+         *
          * @param title the title of the bookmark
          * @param destination the destination anchor or page number
          * @return this PdfOptions instance for method chaining
@@ -1170,7 +1170,7 @@ public class TemplateRenderUtil {
 
         /**
          * Clears all bookmarks.
-         * 
+         *
          * @return this PdfOptions instance for method chaining
          */
         public PdfOptions clearBookmarks() {
@@ -1195,7 +1195,7 @@ public class TemplateRenderUtil {
 
     /**
      * Renders HTML content to an image.
-     * 
+     *
      * @param htmlContent the HTML content to render
      * @param width the width of the image in pixels
      * @param height the height of the image in pixels
@@ -1235,7 +1235,7 @@ public class TemplateRenderUtil {
 
     /**
      * Renders a FreeMarker template to an image.
-     * 
+     *
      * @param templateName the name of the template file
      * @param dataModel the data model to use for rendering
      * @param width the width of the image in pixels
@@ -1244,7 +1244,7 @@ public class TemplateRenderUtil {
      * @return the rendered image as a byte array
      * @throws Exception if an error occurs during rendering
      */
-    public static byte[] renderTemplateToImage(String templateName, Map<String, Object> dataModel, 
+    public static byte[] renderTemplateToImage(String templateName, Map<String, Object> dataModel,
                                               int width, int height, String imageType) throws Exception {
         String html = renderTemplateToHtml(templateName, dataModel);
         return renderHtmlToImage(html, width, height, imageType);
@@ -1252,7 +1252,7 @@ public class TemplateRenderUtil {
 
     /**
      * Renders a FreeMarker template string to an image.
-     * 
+     *
      * @param templateContent the template content as a string
      * @param templateName a name for the template (used for error reporting)
      * @param dataModel the data model to use for rendering
@@ -1262,16 +1262,95 @@ public class TemplateRenderUtil {
      * @return the rendered image as a byte array
      * @throws Exception if an error occurs during rendering
      */
-    public static byte[] renderTemplateStringToImage(String templateContent, String templateName, 
-                                                   Map<String, Object> dataModel, 
+    public static byte[] renderTemplateStringToImage(String templateContent, String templateName,
+                                                   Map<String, Object> dataModel,
                                                    int width, int height, String imageType) throws Exception {
         String html = renderTemplateStringToHtml(templateContent, templateName, dataModel);
         return renderHtmlToImage(html, width, height, imageType);
     }
 
     /**
+     * Renders HTML content to a PDF file.
+     *
+     * @param htmlContent the HTML content to render
+     * @param outputPath the path where the PDF file will be saved
+     * @param options custom PDF rendering options
+     * @throws Exception if an error occurs during rendering
+     */
+    public static void renderHtmlToPdfFile(String htmlContent, String outputPath, PdfOptions options) throws Exception {
+        try (FileOutputStream fos = new FileOutputStream(outputPath)) {
+            renderHtmlToPdf(htmlContent, fos, options);
+            logger.info("PDF created successfully at: {}", outputPath);
+        }
+    }
+
+    /**
+     * Renders HTML content to a PDF file with default options.
+     *
+     * @param htmlContent the HTML content to render
+     * @param outputPath the path where the PDF file will be saved
+     * @throws Exception if an error occurs during rendering
+     */
+    public static void renderHtmlToPdfFile(String htmlContent, String outputPath) throws Exception {
+        renderHtmlToPdfFile(htmlContent, outputPath, new PdfOptions());
+    }
+
+    /**
+     * Renders HTML content to a PDF and returns it as a byte array.
+     *
+     * @param htmlContent the HTML content to render
+     * @param options custom PDF rendering options
+     * @return byte array containing the PDF data
+     * @throws Exception if an error occurs during rendering
+     */
+    public static byte[] renderHtmlToPdfBytes(String htmlContent, PdfOptions options) throws Exception {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            renderHtmlToPdf(htmlContent, baos, options);
+            return baos.toByteArray();
+        }
+    }
+
+    /**
+     * Renders HTML content to a PDF and returns it as a byte array with default options.
+     *
+     * @param htmlContent the HTML content to render
+     * @return byte array containing the PDF data
+     * @throws Exception if an error occurs during rendering
+     */
+    public static byte[] renderHtmlToPdfBytes(String htmlContent) throws Exception {
+        return renderHtmlToPdfBytes(htmlContent, new PdfOptions());
+    }
+
+    /**
+     * Renders HTML content to a PDF and returns it as a byte array asynchronously.
+     *
+     * @param htmlContent the HTML content to render
+     * @param options custom PDF rendering options
+     * @return a CompletableFuture that will complete with the PDF data as a byte array
+     */
+    public static CompletableFuture<byte[]> renderHtmlToPdfBytesAsync(String htmlContent, PdfOptions options) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return renderHtmlToPdfBytes(htmlContent, options);
+            } catch (Exception e) {
+                throw new CompletionException(e);
+            }
+        }, executorService);
+    }
+
+    /**
+     * Renders HTML content to a PDF and returns it as a byte array asynchronously with default options.
+     *
+     * @param htmlContent the HTML content to render
+     * @return a CompletableFuture that will complete with the PDF data as a byte array
+     */
+    public static CompletableFuture<byte[]> renderHtmlToPdfBytesAsync(String htmlContent) {
+        return renderHtmlToPdfBytesAsync(htmlContent, new PdfOptions());
+    }
+
+    /**
      * Saves an image to a file.
-     * 
+     *
      * @param imageBytes the image bytes
      * @param outputPath the path where the image file will be saved
      * @throws IOException if the file cannot be written
@@ -1285,7 +1364,7 @@ public class TemplateRenderUtil {
 
     /**
      * Validates a FreeMarker template for syntax errors.
-     * 
+     *
      * @param templateContent the template content to validate
      * @return a list of validation errors, or an empty list if the template is valid
      */
@@ -1310,7 +1389,7 @@ public class TemplateRenderUtil {
 
     /**
      * Validates a FreeMarker template file for syntax errors.
-     * 
+     *
      * @param templateName the name of the template file to validate
      * @return a list of validation errors, or an empty list if the template is valid
      */

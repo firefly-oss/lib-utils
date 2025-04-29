@@ -14,6 +14,7 @@ The `TemplateRenderUtil` class provides utilities for rendering FreeMarker templ
 
 - **Flexible Template Sources**: Render templates from files or strings
 - **Multiple Output Formats**: Generate HTML, PDF, or image outputs
+- **Direct HTML to PDF Conversion**: Convert HTML strings directly to PDF files or byte arrays
 - **Customizable PDF Options**: Control page size, margins, fonts, and security
 - **Performance Optimization**: Template caching for improved performance
 - **Advanced Features**: Processing hooks, shared variables, and asynchronous rendering
@@ -162,6 +163,18 @@ String html = TemplateRenderUtil.renderTemplateToHtml("dynamic-template.ftl", da
 ```java
 // Convert HTML to PDF with default options
 TemplateRenderUtil.renderHtmlToPdf(html, outputStream, new TemplateRenderUtil.PdfOptions());
+
+// Convert HTML to PDF file
+TemplateRenderUtil.renderHtmlToPdfFile(html, "output.pdf");
+
+// Convert HTML to PDF bytes
+byte[] pdfBytes = TemplateRenderUtil.renderHtmlToPdfBytes(html);
+
+// Convert HTML to PDF asynchronously
+CompletableFuture<byte[]> pdfFuture = TemplateRenderUtil.renderHtmlToPdfBytesAsync(html);
+pdfFuture.thenAccept(bytes -> {
+    // Process the PDF bytes
+});
 ```
 
 ### Direct Template to PDF Conversion

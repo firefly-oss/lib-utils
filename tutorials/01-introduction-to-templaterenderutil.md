@@ -12,6 +12,7 @@ TemplateRenderUtil offers the following key features:
 
 - Rendering FreeMarker templates to HTML
 - Converting HTML to PDF with customizable options
+- Direct HTML to PDF conversion (without requiring templates)
 - Converting HTML to images
 - Template caching for improved performance
 - Template validation

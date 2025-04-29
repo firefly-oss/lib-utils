@@ -271,8 +271,8 @@ public class TemplateRenderUtilTest {
     void testRenderTemplateToImage() throws Exception {
         // Render template to image
         byte[] imageBytes = TemplateRenderUtil.renderTemplateToImage(
-                "test.ftl", 
-                Map.of("name", "Image Test"), 
+                "test.ftl",
+                Map.of("name", "Image Test"),
                 400, 200, "png");
 
         // Verify image was created
@@ -300,11 +300,11 @@ public class TemplateRenderUtilTest {
     @Test
     void testTemplateProcessingHooks() throws Exception {
         // Set up a preprocessor that adds a header
-        BiFunction<String, Map<String, Object>, String> preprocessor = (content, model) -> 
+        BiFunction<String, Map<String, Object>, String> preprocessor = (content, model) ->
             "<h1>Preprocessed</h1>" + content;
 
         // Set up a postprocessor that adds a footer
-        BiFunction<String, Map<String, Object>, String> postprocessor = (content, model) -> 
+        BiFunction<String, Map<String, Object>, String> postprocessor = (content, model) ->
             content + "<footer>Postprocessed</footer>";
 
         // Set the processors
@@ -343,8 +343,8 @@ public class TemplateRenderUtilTest {
     void testAsyncPdfRendering() throws Exception {
         // Render a template to PDF asynchronously
         CompletableFuture<byte[]> future = TemplateRenderUtil.renderTemplateToPdfBytesAsync(
-                "test.ftl", 
-                Map.of("name", "Async PDF"), 
+                "test.ftl",
+                Map.of("name", "Async PDF"),
                 new TemplateRenderUtil.PdfOptions());
 
         // Wait for the result
@@ -353,6 +353,81 @@ public class TemplateRenderUtilTest {
         // Verify the PDF was created
         assertNotNull(pdfBytes);
         assertTrue(pdfBytes.length > 0, "PDF output should not be empty");
+        String header = new String(pdfBytes, 0, 4, StandardCharsets.US_ASCII);
+        assertEquals("%PDF", header, "PDF header should start with '%PDF'");
+    }
+
+    @Test
+    void testRenderHtmlToPdfBytes() throws Exception {
+        // Create a simple HTML content
+        String html = "<html><body><h1>Direct HTML to PDF Test</h1></body></html>";
+
+        // Render HTML to PDF bytes
+        byte[] pdfBytes = TemplateRenderUtil.renderHtmlToPdfBytes(html);
+
+        // Verify the PDF bytes were created correctly
+        assertNotNull(pdfBytes, "PDF bytes should not be null");
+        assertTrue(pdfBytes.length > 0, "PDF bytes should not be empty");
+        String header = new String(pdfBytes, 0, 4, StandardCharsets.US_ASCII);
+        assertEquals("%PDF", header, "PDF header should start with '%PDF'");
+    }
+
+    @Test
+    void testRenderHtmlToPdfBytesWithOptions() throws Exception {
+        // Create a simple HTML content
+        String html = "<html><body><h1>Direct HTML to PDF Test with Options</h1></body></html>";
+
+        // Create custom PDF options
+        TemplateRenderUtil.PdfOptions options = new TemplateRenderUtil.PdfOptions()
+                .withPageSize(TemplateRenderUtil.PdfOptions.PageSize.LETTER)
+                .withMargins(72, 72, 72, 72);
+
+        // Render HTML to PDF bytes with options
+        byte[] pdfBytes = TemplateRenderUtil.renderHtmlToPdfBytes(html, options);
+
+        // Verify the PDF bytes were created correctly
+        assertNotNull(pdfBytes, "PDF bytes should not be null");
+        assertTrue(pdfBytes.length > 0, "PDF bytes should not be empty");
+        String header = new String(pdfBytes, 0, 4, StandardCharsets.US_ASCII);
+        assertEquals("%PDF", header, "PDF header should start with '%PDF'");
+    }
+
+    @Test
+    void testRenderHtmlToPdfFile() throws Exception {
+        // Create a simple HTML content
+        String html = "<html><body><h1>Direct HTML to PDF File Test</h1></body></html>";
+
+        // Create a temporary file for the PDF output
+        File tempFile = File.createTempFile("html-pdf-file-", ".pdf");
+        tempFile.deleteOnExit();
+
+        // Render HTML to PDF file
+        TemplateRenderUtil.renderHtmlToPdfFile(html, tempFile.getAbsolutePath());
+
+        // Verify the PDF file was created and is not empty
+        assertTrue(tempFile.exists(), "PDF file should exist");
+        assertTrue(tempFile.length() > 0, "PDF file should not be empty");
+
+        // Read the first few bytes to verify it's a PDF
+        byte[] header = Files.readAllBytes(tempFile.toPath());
+        String headerStr = new String(header, 0, 4, StandardCharsets.US_ASCII);
+        assertEquals("%PDF", headerStr, "PDF file should start with '%PDF'");
+    }
+
+    @Test
+    void testRenderHtmlToPdfBytesAsync() throws Exception {
+        // Create a simple HTML content
+        String html = "<html><body><h1>Async HTML to PDF Test</h1></body></html>";
+
+        // Render HTML to PDF bytes asynchronously
+        CompletableFuture<byte[]> future = TemplateRenderUtil.renderHtmlToPdfBytesAsync(html);
+
+        // Wait for the result
+        byte[] pdfBytes = future.get();
+
+        // Verify the PDF bytes were created correctly
+        assertNotNull(pdfBytes, "PDF bytes should not be null");
+        assertTrue(pdfBytes.length > 0, "PDF bytes should not be empty");
         String header = new String(pdfBytes, 0, 4, StandardCharsets.US_ASCII);
         assertEquals("%PDF", header, "PDF header should start with '%PDF'");
     }
