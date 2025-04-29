@@ -2,11 +2,30 @@
 
 A collection of utility classes for common operations in Java applications.
 
+## Overview
+
+The lib-utils library provides a set of powerful utilities to simplify common tasks in Java applications. The primary component is the `TemplateRenderUtil` class, which offers comprehensive template rendering capabilities using FreeMarker.
+
 ## Features
 
 ### Template Rendering (FreeMarker)
 
-The `TemplateRenderUtil` class provides utilities for rendering FreeMarker templates to HTML, PDF, and image formats with extensive customization options.
+The `TemplateRenderUtil` class provides utilities for rendering FreeMarker templates to HTML, PDF, and image formats with extensive customization options. Key capabilities include:
+
+- **Flexible Template Sources**: Render templates from files or strings
+- **Multiple Output Formats**: Generate HTML, PDF, or image outputs
+- **Customizable PDF Options**: Control page size, margins, fonts, and security
+- **Performance Optimization**: Template caching for improved performance
+- **Advanced Features**: Processing hooks, shared variables, and asynchronous rendering
+
+### Tutorial Documentation
+
+Detailed tutorials are available in the `tutorials` directory:
+
+1. **Introduction to TemplateRenderUtil**: Basic concepts and usage
+2. **Template Syntax and Structure**: FreeMarker template syntax guide
+3. **PDF Customization Options**: Detailed PDF configuration options
+4. **Advanced Features**: Template caching, hooks, async rendering, and more
 
 ## Table of Contents
 
@@ -28,30 +47,24 @@ The `TemplateRenderUtil` class provides utilities for rendering FreeMarker templ
 
 ## Installation
 
-Add the following dependencies to your Maven `pom.xml` file:
+To use the utilities in this library, simply add the lib-utils dependency to your Maven `pom.xml` file:
 
 ```xml
-<!-- FreeMarker Template Engine -->
+<!-- lib-utils library -->
 <dependency>
-    <groupId>org.freemarker</groupId>
-    <artifactId>freemarker</artifactId>
-    <version>2.3.32</version>
-</dependency>
-
-<!-- Flying Saucer for PDF generation -->
-<dependency>
-    <groupId>org.xhtmlrenderer</groupId>
-    <artifactId>flying-saucer-pdf-openpdf</artifactId>
-    <version>9.3.1</version>
-</dependency>
-
-<!-- SLF4J API for logging -->
-<dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>slf4j-api</artifactId>
-    <version>2.0.9</version>
+    <groupId>com.catalis</groupId>
+    <artifactId>lib-utils</artifactId>
+    <version>1.0.0</version>
 </dependency>
 ```
+
+The lib-utils library already includes all necessary dependencies:
+
+- FreeMarker Template Engine (for template processing)
+- Flying Saucer with OpenPDF (for PDF generation)
+- SLF4J API (for logging)
+
+No additional dependencies are required to use the functionality provided by this library.
 
 ## Template Configuration
 
@@ -327,7 +340,7 @@ Render templates asynchronously for improved performance:
 ```java
 // Render template to HTML asynchronously
 CompletableFuture<String> htmlFuture = TemplateRenderUtil.renderTemplateToHtmlAsync(
-    "report.ftl", 
+    "report.ftl",
     dataModel
 );
 
