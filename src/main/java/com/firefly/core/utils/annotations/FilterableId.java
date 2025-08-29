@@ -1,4 +1,4 @@
-package com.catalis.core.utils.annotations;
+package com.firefly.core.utils.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

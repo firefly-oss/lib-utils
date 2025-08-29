@@ -1,4 +1,4 @@
-package com.catalis.core.utils.template;
+package com.firefly.core.utils.template;
 
 import freemarker.cache.ClassTemplateLoader;
 import freemarker.cache.FileTemplateLoader;

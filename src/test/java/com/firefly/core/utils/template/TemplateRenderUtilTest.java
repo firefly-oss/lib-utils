@@ -1,4 +1,4 @@
-package com.catalis.core.utils.template;
+package com.firefly.core.utils.template;
 
 import freemarker.template.TemplateException;
 import org.junit.jupiter.api.BeforeAll;
