@@ -29,7 +29,7 @@ To use TemplateRenderUtil, you need to import the lib-utils library in your proj
 ```xml
 <!-- lib-utils library containing TemplateRenderUtil -->
 <dependency>
-    <groupId>com.catalis</groupId>
+    <groupId>com.firefly</groupId>
     <artifactId>lib-utils</artifactId>
     <version>1.0.0</version>
 </dependency>

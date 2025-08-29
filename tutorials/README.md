@@ -9,7 +9,7 @@ Before starting these tutorials, make sure you have:
 1. Added the lib-utils dependency to your project:
    ```xml
    <dependency>
-       <groupId>com.catalis</groupId>
+       <groupId>com.firefly</groupId>
        <artifactId>lib-utils</artifactId>
        <version>1.0.0</version>
    </dependency>
