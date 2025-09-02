@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.UUID;
 
 /**
  * The FilterableId annotation is used to mark ID fields that should be included
@@ -24,9 +25,9 @@ import java.lang.annotation.Target;
  * {@code
  *     public class UserFilterDTO {
  *         @FilterableId
- *         private Long customerId;  // Will be included in filters with exact matching
+ *         private UUID customerId;  // Will be included in filters with exact matching
  *
- *         private Long accountId;   // Will be excluded from filters
+ *         private UUID accountId;   // Will be excluded from filters
  *
  *         private String name;      // Regular field with full filtering capabilities
  *     }
